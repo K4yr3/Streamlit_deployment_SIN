@@ -112,43 +112,79 @@ if uploaded_file is not None:
 
     # PREPROCESSING
     data_preparada = data.copy()
-
+    
+    # CLEAN COLUMN NAMES
+    data_preparada.columns = (
+        data_preparada.columns
+        .str.replace("'", "", regex=False)
+        .str.strip()
+        .str.replace(" ", "_")
+    )
+    
     # NUMERIC COLUMNS
     numeric_cols = [
-        'periodo', 'mes', 'Generación_kWh', 'Demanda_No_Atendida_kWh',
-        'Exportaciones_kWh', 'Importaciones_kWh', 'Volumen_Mm³',
-        'Aportes_Caudal_m3/s', 'Mínimo_Generación_Hidraulica_kWh',
+        'periodo',
+        'mes',
+        'Generación_kWh',
+        'Demanda_No_Atendida_kWh',
+        'Exportaciones_kWh',
+        'Importaciones_kWh',
+        'Volumen_Mm³',
+        'Aportes_Caudal_m3/s',
+        'Mínimo_Generación_Hidraulica_kWh',
         'delta_reservas_7d'
     ]
-
+    
+    # VALIDATE REQUIRED COLUMNS
     missing_cols = [
-    col for col in numeric_cols
-    if col not in data_preparada.columns
+        col for col in numeric_cols + ['regimen_enso']
+        if col not in data_preparada.columns
     ]
-
+    
     if missing_cols:
-        st.error(f'Faltan columnas numéricas: {missing_cols}')
+        st.error(f'❌ Faltan columnas requeridas: {missing_cols}')
         st.stop()
-
-    # SCALING
+    
+    # FORCE NUMERIC TYPES
+    data_preparada[numeric_cols] = (
+        data_preparada[numeric_cols]
+        .apply(pd.to_numeric, errors='coerce')
+    )
+    
+    # CHECK NULLS AFTER CONVERSION
+    if data_preparada[numeric_cols].isnull().sum().sum() > 0:
+        st.error('❌ Existen valores vacíos o no numéricos en las columnas numéricas.')
+        st.stop()
+    
+    # SCALE FIRST
     data_preparada[numeric_cols] = scaler.transform(
         data_preparada[numeric_cols]
     )
-
-    # DUMMIES
+    
+    # CREATE DUMMIES
     data_preparada = pd.get_dummies(
         data_preparada,
         columns=['regimen_enso'],
         drop_first=True,
         dtype=int
     )
-
-    # REINDEX
+    
+    # ALIGN COLUMNS WITH TRAINING
     data_preparada = data_preparada.reindex(
         columns=variables,
         fill_value=0
     )
-
+    
+    # FINAL VALIDATION
+    missing_model_cols = [
+        col for col in variables
+        if col not in data_preparada.columns
+    ]
+    
+    if missing_model_cols:
+        st.error(f'❌ Faltan columnas para el modelo: {missing_model_cols}')
+        st.stop()
+    
     # PREDICTIONS
     predicciones = modelo.predict(data_preparada)
 
