@@ -32,7 +32,11 @@ st.title('Predicción del precio de energía d+1')
 # =========================
 
 MODEL_FILE = 'modelo_final.pkl'
-modelo, scaler, variables = None, None, None
+
+modelo = None
+scaler = None
+variables = None
+numeric_cols = None
 
 # Try loading from disk first (works when file is deployed alongside the app)
 try:
