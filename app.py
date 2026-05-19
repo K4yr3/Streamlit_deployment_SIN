@@ -32,26 +32,47 @@ st.title('Predicción del precio de energía d+1')
 # =========================
 
 MODEL_FILE = 'modelo_final.pkl'
-modelo, scaler, variables = None, None, None
+
+modelo = None
+scaler = None
+variables = None
+numeric_cols = None
 
 # Try loading from disk first (works when file is deployed alongside the app)
 try:
     with open(MODEL_FILE, 'rb') as f:
-        modelo, scaler, variables = pickle.load(f)
+        modelo, scaler, variables, numeric_cols = pickle.load(f)
+
     st.sidebar.success('✅ Modelo cargado desde disco')
+
 except FileNotFoundError:
-    st.sidebar.warning('⚠️ Archivo de modelo no encontrado en disco.')
+
+    st.sidebar.warning(
+        '⚠️ Archivo de modelo no encontrado en disco.'
+    )
+
     uploaded_model = st.sidebar.file_uploader(
         'Sube el archivo del modelo (.pkl)',
         type=['pkl'],
         key='model_uploader'
     )
+
     if uploaded_model is not None:
+
         try:
-            modelo, scaler, variables = pickle.load(uploaded_model)
-            st.sidebar.success('✅ Modelo cargado correctamente')
+            modelo, scaler, variables, numeric_cols = pickle.load(
+                uploaded_model
+            )
+
+            st.sidebar.success(
+                '✅ Modelo cargado correctamente'
+            )
+
         except Exception as e:
-            st.sidebar.error(f'Error al cargar el modelo: {e}')
+
+            st.sidebar.error(
+                f'Error al cargar el modelo: {e}'
+            )
 
 # =========================
 # MAIN CONTENT
@@ -112,43 +133,97 @@ if uploaded_file is not None:
 
     # PREPROCESSING
     data_preparada = data.copy()
-
+    
+    # CLEAN COLUMN NAMES
+    data_preparada.columns = (
+        data_preparada.columns
+        .str.replace("'", "", regex=False)
+        .str.strip()
+        .str.replace(" ", "_")
+    )
+    
     # NUMERIC COLUMNS
     numeric_cols = [
-        'periodo', 'mes', 'Generación_kWh', 'Demanda_No_Atendida_kWh',
-        'Exportaciones_kWh', 'Importaciones_kWh', 'Volumen_Mm³',
-        'Aportes_Caudal_m3/s', 'Mínimo_Generación_Hidraulica_kWh',
+        'periodo',
+        'mes',
+        'Generación_kWh',
+        'Demanda_No_Atendida_kWh',
+        'Exportaciones_kWh',
+        'Importaciones_kWh',
+        'Volumen_Mm³',
+        'Aportes_Caudal_m3/s',
+        'Mínimo_Generación_Hidraulica_kWh',
         'delta_reservas_7d'
     ]
-
+    
+    # VALIDATE REQUIRED COLUMNS
     missing_cols = [
-    col for col in numeric_cols
-    if col not in data_preparada.columns
+        col for col in numeric_cols + ['regimen_enso']
+        if col not in data_preparada.columns
     ]
-
+    
     if missing_cols:
-        st.error(f'Faltan columnas numéricas: {missing_cols}')
+        st.error(f'❌ Faltan columnas requeridas: {missing_cols}')
+        st.stop()
+    
+    # FORCE NUMERIC TYPES
+    data_preparada[numeric_cols] = (
+        data_preparada[numeric_cols]
+        .apply(pd.to_numeric, errors='coerce')
+    )
+    
+    # CHECK NULLS AFTER CONVERSION
+    if data_preparada[numeric_cols].isnull().sum().sum() > 0:
+        st.error('❌ Existen valores vacíos o no numéricos en las columnas numéricas.')
         st.stop()
 
-    # SCALING
+    # DEBUG
+    st.write("Scaler feature names:")
+    st.write(list(scaler.feature_names_in_))
+    
+    st.write("Current numeric columns:")
+    st.write(list(data_preparada[numeric_cols].columns))
+    
+    st.write("Columns missing from input:")
+    st.write(
+        set(scaler.feature_names_in_) -
+        set(data_preparada[numeric_cols].columns)
+    )
+    
+    st.write("Extra columns in input:")
+    st.write(
+        set(data_preparada[numeric_cols].columns) -
+        set(scaler.feature_names_in_)
+    )
+    # SCALE FIRST
     data_preparada[numeric_cols] = scaler.transform(
         data_preparada[numeric_cols]
     )
-
-    # DUMMIES
+    
+    # CREATE DUMMIES
     data_preparada = pd.get_dummies(
         data_preparada,
         columns=['regimen_enso'],
         drop_first=True,
         dtype=int
     )
-
-    # REINDEX
+    
+    # ALIGN COLUMNS WITH TRAINING
     data_preparada = data_preparada.reindex(
         columns=variables,
         fill_value=0
     )
-
+    
+    # FINAL VALIDATION
+    missing_model_cols = [
+        col for col in variables
+        if col not in data_preparada.columns
+    ]
+    
+    if missing_model_cols:
+        st.error(f'❌ Faltan columnas para el modelo: {missing_model_cols}')
+        st.stop()
+    
     # PREDICTIONS
     predicciones = modelo.predict(data_preparada)
 
