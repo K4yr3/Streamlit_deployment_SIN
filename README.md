@@ -111,7 +111,7 @@ Métricas: MAPE, MAE y Directional Accuracy sobre conjunto de prueba.
 
 ## 🚀 Aplicación Streamlit — Demo en Vivo
 
-[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://k4yr3-streamlit-deployment-sin-app-abqxzp.streamlit.app/)
+[![Streamlit App](https://streamlit.io/images/brand/streamlit-logo-primary-colormark-darktext.png)
 
 🔗 **URL:** [https://k4yr3-streamlit-deployment-sin-app-abqxzp.streamlit.app/](https://k4yr3-streamlit-deployment-sin-app-abqxzp.streamlit.app/)
 
@@ -121,13 +121,13 @@ La aplicación está desplegada en **Streamlit Community Cloud**, integrada dire
 
 **Vista principal — Carga de datos y estructura requerida**
 
-![Vista principal de la app](assets/screenshot_main.png)
+![Vista principal de la app](img/Prediction_SIN_Streamlit.jpg)
 
 > *Interfaz de carga del modelo (.pkl) desde la barra lateral, descripción de la estructura del CSV requerido y uploader de datos.*
 
 **Resultado de predicciones con descarga**
 
-![Resultado predicciones](assets/screenshot_results.png)
+![Resultado predicciones](img/Prediction_SIN_result_Streamlit.jpg)
 
 > *Tabla con la columna `Prediccion_precio_d+1` generada y botón de descarga en CSV.*
 
