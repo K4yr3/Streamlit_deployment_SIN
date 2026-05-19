@@ -111,9 +111,9 @@ Métricas: MAPE, MAE y Directional Accuracy sobre conjunto de prueba.
 
 ## 🚀 Aplicación Streamlit — Demo en Vivo
 
-[![Streamlit App](https://streamlit.io/images/brand/streamlit-logo-primary-colormark-darktext.png)
+[![Streamlit App](https://streamlit.io/images/brand/streamlit-logo-primary-colormark-darktext.png)](https://k4yr3-streamlit-deployment-sin-app-abqxzp.streamlit.app/)
 
-🔗 **URL:** [https://k4yr3-streamlit-deployment-sin-app-abqxzp.streamlit.app/](https://k4yr3-streamlit-deployment-sin-app-abqxzp.streamlit.app/)
+🔗 **URL:**  [https://k4yr3-streamlit-deployment-sin-app-abqxzp.streamlit.app/](https://k4yr3-streamlit-deployment-sin-app-abqxzp.streamlit.app/)
 
 La aplicación está desplegada en **Streamlit Community Cloud**, integrada directamente con este repositorio de GitHub. Cualquier `push` a la rama principal actualiza el despliegue de forma automática.
 
