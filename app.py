@@ -176,7 +176,25 @@ if uploaded_file is not None:
     if data_preparada[numeric_cols].isnull().sum().sum() > 0:
         st.error('❌ Existen valores vacíos o no numéricos en las columnas numéricas.')
         st.stop()
+
+    # DEBUG
+    st.write("Scaler feature names:")
+    st.write(list(scaler.feature_names_in_))
     
+    st.write("Current numeric columns:")
+    st.write(list(data_preparada[numeric_cols].columns))
+    
+    st.write("Columns missing from input:")
+    st.write(
+        set(scaler.feature_names_in_) -
+        set(data_preparada[numeric_cols].columns)
+    )
+    
+    st.write("Extra columns in input:")
+    st.write(
+        set(data_preparada[numeric_cols].columns) -
+        set(scaler.feature_names_in_)
+    )
     # SCALE FIRST
     data_preparada[numeric_cols] = scaler.transform(
         data_preparada[numeric_cols]
