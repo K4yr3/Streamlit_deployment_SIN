@@ -113,6 +113,28 @@ if uploaded_file is not None:
     # PREPROCESSING
     data_preparada = data.copy()
 
+    # NUMERIC COLUMNS
+    numeric_cols = [
+        'periodo', 'mes', 'Generación_kWh', 'Demanda_No_Atendida_kWh',
+        'Exportaciones_kWh', 'Importaciones_kWh', 'Volumen_Mm³',
+        'Aportes_Caudal_m3/s', 'Mínimo_Generación_Hidraulica_kWh',
+        'delta_reservas_7d'
+    ]
+
+    missing_cols = [
+    col for col in numeric_cols
+    if col not in data_preparada.columns
+    ]
+
+    if missing_cols:
+        st.error(f'Faltan columnas numéricas: {missing_cols}')
+        st.stop()
+
+    # SCALING
+    data_preparada[numeric_cols] = scaler.transform(
+        data_preparada[numeric_cols]
+    )
+
     # DUMMIES
     data_preparada = pd.get_dummies(
         data_preparada,
@@ -125,19 +147,6 @@ if uploaded_file is not None:
     data_preparada = data_preparada.reindex(
         columns=variables,
         fill_value=0
-    )
-
-    # NUMERIC COLUMNS
-    numeric_cols = [
-        'periodo', 'mes', 'Generación_kWh', 'Demanda_No_Atendida_kWh',
-        'Exportaciones_kWh', 'Importaciones_kWh', 'Volumen_Mm³',
-        'Aportes_Caudal_m3/s', 'Mínimo_Generación_Hidraulica_kWh',
-        'delta_reservas_7d'
-    ]
-
-    # SCALING
-    data_preparada[numeric_cols] = scaler.transform(
-        data_preparada[numeric_cols]
     )
 
     # PREDICTIONS
