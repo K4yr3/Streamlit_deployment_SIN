@@ -41,21 +41,38 @@ numeric_cols = None
 # Try loading from disk first (works when file is deployed alongside the app)
 try:
     with open(MODEL_FILE, 'rb') as f:
-        modelo, scaler, variables = pickle.load(f)
+        modelo, scaler, variables, numeric_cols = pickle.load(f)
+
     st.sidebar.success('✅ Modelo cargado desde disco')
+
 except FileNotFoundError:
-    st.sidebar.warning('⚠️ Archivo de modelo no encontrado en disco.')
+
+    st.sidebar.warning(
+        '⚠️ Archivo de modelo no encontrado en disco.'
+    )
+
     uploaded_model = st.sidebar.file_uploader(
         'Sube el archivo del modelo (.pkl)',
         type=['pkl'],
         key='model_uploader'
     )
+
     if uploaded_model is not None:
+
         try:
-            modelo, scaler, variables = pickle.load(uploaded_model)
-            st.sidebar.success('✅ Modelo cargado correctamente')
+            modelo, scaler, variables, numeric_cols = pickle.load(
+                uploaded_model
+            )
+
+            st.sidebar.success(
+                '✅ Modelo cargado correctamente'
+            )
+
         except Exception as e:
-            st.sidebar.error(f'Error al cargar el modelo: {e}')
+
+            st.sidebar.error(
+                f'Error al cargar el modelo: {e}'
+            )
 
 # =========================
 # MAIN CONTENT
